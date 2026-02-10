@@ -26,7 +26,7 @@ interface AuthState {
   initialized: boolean
   needsOnboarding: boolean
   signIn: (email: string, password: string) => Promise<void>
-  signInWithGoogle: () => Promise<void>
+  signInWithGoogle: (role?: UserRole) => Promise<void>
   register: (email: string, password: string, role: UserRole) => Promise<void>
   signOut: () => Promise<void>
   fetchProfile: () => Promise<void>
