@@ -6,7 +6,7 @@ export function MerchantHome() {
   const { profile } = useAuthStore()
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', border: '2px solid blue' }}>
+    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
       {/* Welcome Banner */}
       <div style={{
         background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',

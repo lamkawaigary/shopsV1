@@ -6,7 +6,7 @@ export function CustomerHome() {
   const { profile } = useAuthStore()
 
   return (
-    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', border: '2px solid red' }}>
+    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
       {/* Welcome Banner */}
       <div style={{
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',

@@ -57,53 +57,31 @@ export function LoginPage() {
     
     try {
       console.log('🔵 Starting Google login...')
-      const result = await signInWithGoogle()
-      console.log('✅ Google login completed, result:', { uid: result?.user?.uid, email: result?.user?.email })
-
-      // Try to fetch/create the profile immediately using the returned UID
-      const uid = result?.user?.uid
-      if (uid) {
-        try {
-          const profile = await useAuthStore.getState().fetchProfileByUid(uid)
-          if (profile) {
-            if (profile.onboardingCompleted) {
-              navigate('/', { replace: true })
-            } else {
-              navigate('/onboarding', { replace: true })
-            }
-            setLoading(false)
-            return
-          }
-        } catch (e) {
-          console.warn('⚠️ Immediate profile fetch failed, will fallback to polling', e)
-        }
-      }
-
-      // Fallback: if auth listener is delayed, poll the auth store and navigate
+      await signInWithGoogle()
+      console.log('✅ Google login completed, waiting for auth listener...')
+      // The redirect should happen automatically via the useEffect when auth listener updates the store
+      // But add a fallback polling just in case
+      
       const start = Date.now()
-      const timeout = 3000
-      const poll = async () => {
-        while (Date.now() - start < timeout) {
-          const state = useAuthStore.getState()
-          if (state.initialized && state.user) {
-            // If onboarding is needed, navigate there, else to home
-            if (state.needsOnboarding) {
-              navigate('/onboarding', { replace: true })
-            } else {
-              navigate('/', { replace: true })
-            }
-            return
-          }
-          // wait a bit
-          // eslint-disable-next-line no-await-in-loop
-          await new Promise((r) => setTimeout(r, 200))
+      const timeout = 5000
+      const checkInterval = setInterval(() => {
+        const state = useAuthStore.getState()
+        console.log('🔍 Polling auth state:', { user: !!state.user, initialized: state.initialized })
+        
+        if (state.user && state.initialized) {
+          clearInterval(checkInterval)
+          console.log('✅ Auth state updated, user logged in')
+          // Navigation will happen via useEffect
+          return
         }
-        // If still not initialized, show an error and stop loading
-        console.warn('⚠️ Auth listener delayed after Google login')
-        setError('登入已完成但尚未更新狀態，請稍候或重新整理頁面')
-        setLoading(false)
-      }
-      void poll()
+        
+        if (Date.now() - start > timeout) {
+          clearInterval(checkInterval)
+          console.warn('⚠️ Auth listener timeout')
+          setError('Google 登入逾時，請重新整理頁面並再試一次')
+          setLoading(false)
+        }
+      }, 300)
     } catch (err: any) {
       console.error('❌ Google login error:', err)
       setError(err.message || 'Google 登入失敗')
