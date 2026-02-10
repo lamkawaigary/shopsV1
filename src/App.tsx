@@ -5,6 +5,11 @@ import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { OnboardingPage } from './pages/auth/OnboardingPage'
 import { ProfilePage } from './pages/customer/ProfilePage'
+import { CustomerHome } from './pages/home/CustomerHome'
+import { MerchantHome } from './pages/home/MerchantHome'
+import { DeliveryHome } from './pages/home/DeliveryHome'
+import { AdminHome } from './pages/home/AdminHome'
+import { DynamicHome } from './pages/home/DynamicHome'
 
 function App() {
   console.log('📱 App rendering')
@@ -18,17 +23,46 @@ function App() {
       {/* Protected Routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/onboarding" element={<OnboardingPage />} />
+        
+        {/* All app pages wrapped in AppLayout */}
         <Route element={<AppLayout />}>
-          <Route path="/" element={
-            <div style={{ padding: '16px', textAlign: 'center', marginTop: '40px' }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🛒</div>
-              <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>歡迎使用 ShopS</h1>
-              <p style={{ color: '#64748b' }}>登入成功！呢度係首頁。</p>
-            </div>
-          } />
-          <Route path="/projects" element={<div>專案</div>} />
-          <Route path="/shop" element={<div>商店</div>} />
-          <Route path="/orders" element={<div>訂單</div>} />
+          {/* Dynamic Home - routes to role-specific home */}
+          <Route path="/" element={<DynamicHome />} />
+          
+          {/* Role-specific Homes */}
+          <Route path="/home/customer" element={<CustomerHome />} />
+          <Route path="/home/merchant" element={<MerchantHome />} />
+          <Route path="/home/delivery" element={<DeliveryHome />} />
+          <Route path="/home/admin" element={<AdminHome />} />
+          
+          {/* Customer Pages */}
+          <Route path="/shop" element={<div style={{ padding: '24px' }}>🛒 商店頁面</div>} />
+          <Route path="/orders" element={<div style={{ padding: '24px' }}>📦 訂單頁面</div>} />
+          <Route path="/projects" element={<div style={{ padding: '24px' }}>📋 專案頁面</div>} />
+          <Route path="/cart" element={<div style={{ padding: '24px' }}>🛒 購物車頁面</div>} />
+          <Route path="/favorites" element={<div style={{ padding: '24px' }}>❤️ 收藏頁面</div>} />
+          
+          {/* Merchant Pages */}
+          <Route path="/merchant/orders" element={<div style={{ padding: '24px' }}>商戶訂單管理</div>} />
+          <Route path="/merchant/products" element={<div style={{ padding: '24px' }}>商品管理</div>} />
+          <Route path="/merchant/stats" element={<div style={{ padding: '24px' }}>銷售統計</div>} />
+          <Route path="/merchant/settings" element={<div style={{ padding: '24px' }}>店舖設定</div>} />
+          
+          {/* Delivery Pages */}
+          <Route path="/delivery/tasks" element={<div style={{ padding: '24px' }}>配送任務</div>} />
+          <Route path="/delivery/history" element={<div style={{ padding: '24px' }}>配送歷史</div>} />
+          <Route path="/delivery/earnings" element={<div style={{ padding: '24px' }}>收入統計</div>} />
+          <Route path="/delivery/ratings" element={<div style={{ padding: '24px' }}>評價反饋</div>} />
+          
+          {/* Admin Pages */}
+          <Route path="/admin/users" element={<div style={{ padding: '24px' }}>用戶管理</div>} />
+          <Route path="/admin/merchants" element={<div style={{ padding: '24px' }}>商戶管理</div>} />
+          <Route path="/admin/orders" element={<div style={{ padding: '24px' }}>訂單管理</div>} />
+          <Route path="/admin/analytics" element={<div style={{ padding: '24px' }}>數據分析</div>} />
+          <Route path="/admin/messages" element={<div style={{ padding: '24px' }}>消息中心</div>} />
+          <Route path="/admin/settings" element={<div style={{ padding: '24px' }}>系統設定</div>} />
+          
+          {/* Common Pages */}
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>

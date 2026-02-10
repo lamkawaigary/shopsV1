@@ -7,7 +7,7 @@ import { useCartStore } from '@/stores/cartStore'
 const roleConfig: Record<UserRole, { navItems: Array<{ label: string; path: string; icon: string }> }> = {
   customer: {
     navItems: [
-      { label: '首頁', path: '/', icon: '🏠' },
+      { label: '首頁', path: '/home/customer', icon: '🏠' },
       { label: '專案', path: '/projects', icon: '📋' },
       { label: '商店', path: '/shop', icon: '🛒' },
       { label: '訂單', path: '/orders', icon: '📦' },
@@ -16,6 +16,7 @@ const roleConfig: Record<UserRole, { navItems: Array<{ label: string; path: stri
   },
   merchant: {
     navItems: [
+      { label: '首頁', path: '/home/merchant', icon: '🏪' },
       { label: '訂單', path: '/merchant/orders', icon: '📦' },
       { label: '商品', path: '/merchant/products', icon: '🏷️' },
       { label: '統計', path: '/merchant/stats', icon: '📊' },
@@ -24,14 +25,15 @@ const roleConfig: Record<UserRole, { navItems: Array<{ label: string; path: stri
   },
   delivery: {
     navItems: [
-      { label: '任務', path: '/delivery/tasks', icon: '🚗' },
+      { label: '首頁', path: '/home/delivery', icon: '🚗' },
+      { label: '任務', path: '/delivery/tasks', icon: '📍' },
       { label: '歷史', path: '/delivery/history', icon: '📋' },
       { label: '收入', path: '/delivery/earnings', icon: '💰' }
     ]
   },
   admin: {
     navItems: [
-      { label: '總覽', path: '/admin', icon: '📊' },
+      { label: '總覽', path: '/home/admin', icon: '📊' },
       { label: '用戶', path: '/admin/users', icon: '👥' },
       { label: '商戶', path: '/admin/merchants', icon: '🏪' },
       { label: '訂單', path: '/admin/orders', icon: '📦' }

@@ -26,10 +26,11 @@ interface AuthState {
   initialized: boolean
   needsOnboarding: boolean
   signIn: (email: string, password: string) => Promise<void>
-  signInWithGoogle: (role?: UserRole) => Promise<void>
+  signInWithGoogle: (role?: UserRole) => Promise<any>
   register: (email: string, password: string, role: UserRole) => Promise<void>
   signOut: () => Promise<void>
   fetchProfile: () => Promise<void>
+  fetchProfileByUid: (uid: string) => Promise<UserProfile | null>
   updateProfile: (data: Partial<UserProfile>) => Promise<void>
 }
 
@@ -74,6 +75,40 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         console.error('❌ Error saving profile:', error)
         throw error
       }
+    }
+    // Return credential so caller can act immediately
+    return result
+  },
+
+  fetchProfileByUid: async (uid: string) => {
+    try {
+      const docRef = doc(db, 'users', uid)
+      const docSnap = await getDoc(docRef)
+
+      if (docSnap.exists()) {
+        const profile = docSnap.data() as UserProfile
+        // cache and set state
+        localStorage.setItem('authCache', JSON.stringify({ uid, profile }))
+        set({ profile, needsOnboarding: !profile.onboardingCompleted })
+        return profile
+      }
+
+      // If no profile, create a default one and set state immediately
+      const newProfile: UserProfile = {
+        email: '',
+        role: 'customer',
+        displayName: '',
+        onboardingCompleted: false,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+      set({ profile: newProfile, needsOnboarding: true })
+      // create in background
+      void createUserProfileAsync(uid, newProfile)
+      return newProfile
+    } catch (error) {
+      console.error('⚠️ Error in fetchProfileByUid:', error)
+      return null
     }
   },
 

@@ -57,10 +57,53 @@ export function LoginPage() {
     
     try {
       console.log('🔵 Starting Google login...')
-      await signInWithGoogle()
-      console.log('✅ Google login completed, waiting for redirect...')
-      // The redirect should happen automatically via the useEffect
-      // Don't reset loading here - let the redirect happen
+      const result = await signInWithGoogle()
+      console.log('✅ Google login completed, result:', { uid: result?.user?.uid, email: result?.user?.email })
+
+      // Try to fetch/create the profile immediately using the returned UID
+      const uid = result?.user?.uid
+      if (uid) {
+        try {
+          const profile = await useAuthStore.getState().fetchProfileByUid(uid)
+          if (profile) {
+            if (profile.onboardingCompleted) {
+              navigate('/', { replace: true })
+            } else {
+              navigate('/onboarding', { replace: true })
+            }
+            setLoading(false)
+            return
+          }
+        } catch (e) {
+          console.warn('⚠️ Immediate profile fetch failed, will fallback to polling', e)
+        }
+      }
+
+      // Fallback: if auth listener is delayed, poll the auth store and navigate
+      const start = Date.now()
+      const timeout = 3000
+      const poll = async () => {
+        while (Date.now() - start < timeout) {
+          const state = useAuthStore.getState()
+          if (state.initialized && state.user) {
+            // If onboarding is needed, navigate there, else to home
+            if (state.needsOnboarding) {
+              navigate('/onboarding', { replace: true })
+            } else {
+              navigate('/', { replace: true })
+            }
+            return
+          }
+          // wait a bit
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise((r) => setTimeout(r, 200))
+        }
+        // If still not initialized, show an error and stop loading
+        console.warn('⚠️ Auth listener delayed after Google login')
+        setError('登入已完成但尚未更新狀態，請稍候或重新整理頁面')
+        setLoading(false)
+      }
+      void poll()
     } catch (err: any) {
       console.error('❌ Google login error:', err)
       setError(err.message || 'Google 登入失敗')
