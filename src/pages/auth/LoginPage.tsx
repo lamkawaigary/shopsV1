@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/authStore'
+import { auth } from '@/config/firebase'
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -58,27 +59,51 @@ export function LoginPage() {
     try {
       console.log('🔵 Starting Google login...')
       await signInWithGoogle()
-      console.log('✅ Google login completed, waiting for auth listener...')
-      // The redirect should happen automatically via the useEffect when auth listener updates the store
-      // But add a fallback polling just in case
+      console.log('✅ Google login completed')
+
+      // After Google login succeeds, immediately check Firebase auth state
+      const firebaseUser = auth.currentUser
       
+      if (firebaseUser) {
+        console.log('🔍 Firebase user authenticated:', { uid: firebaseUser.uid, email: firebaseUser.email })
+        
+        // Try to fetch/create profile immediately
+        const { fetchProfileByUid } = useAuthStore.getState()
+        const profile = await fetchProfileByUid(firebaseUser.uid)
+        console.log('✅ Profile fetched/created:', { role: profile?.role })
+        
+        // Manually update store to trigger redirect
+        useAuthStore.setState({
+          user: firebaseUser as any,
+          initialized: true,
+          loading: false,
+          profile: profile || undefined,
+          needsOnboarding: profile ? !profile.onboardingCompleted : false
+        })
+        
+        // Navigation will happen via useEffect watching these state changes
+        return
+      }
+
+      // Fallback: poll in case auth state is delayed
+      console.log('⚠️ No Firebase user found immediately, falling back to polling')
       const start = Date.now()
-      const timeout = 5000
+      const timeout = 3000
       const checkInterval = setInterval(() => {
         const state = useAuthStore.getState()
-        console.log('🔍 Polling auth state:', { user: !!state.user, initialized: state.initialized })
+        const currentAuthUser = auth.currentUser
+        console.log('🔍 Polling:', { fbUser: !!currentAuthUser, storeUser: !!state.user, initialized: state.initialized })
         
-        if (state.user && state.initialized) {
+        if (currentAuthUser && state.user && state.initialized) {
           clearInterval(checkInterval)
-          console.log('✅ Auth state updated, user logged in')
-          // Navigation will happen via useEffect
+          console.log('✅ Auth state updated via polling')
           return
         }
         
         if (Date.now() - start > timeout) {
           clearInterval(checkInterval)
-          console.warn('⚠️ Auth listener timeout')
-          setError('Google 登入逾時，請重新整理頁面並再試一次')
+          console.warn('⚠️ Auth state timeout')
+          setError('Google 登入已完成但狀態未更新，請重新整理頁面')
           setLoading(false)
         }
       }, 300)

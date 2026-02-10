@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { AppLayout } from './components/layout/AppLayout'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import { LoginPage } from './pages/auth/LoginPage'
@@ -10,6 +10,35 @@ import { MerchantHome } from './pages/home/MerchantHome'
 import { DeliveryHome } from './pages/home/DeliveryHome'
 import { AdminHome } from './pages/home/AdminHome'
 import { DynamicHome } from './pages/home/DynamicHome'
+
+// Simple placeholder page with back button to aid testing
+function PlaceholderPage({ title, icon }: { title: string; icon: string }) {
+  const navigate = useNavigate()
+  return (
+    <div style={{ padding: '24px' }}>
+      <div style={{ marginBottom: '16px' }}>
+        <button
+          onClick={() => navigate(-1)}
+          style={{
+            padding: '8px 16px',
+            background: '#667eea',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
+        >
+          ← 返回
+        </button>
+      </div>
+      <div style={{ textAlign: 'center', marginTop: '40px', color: '#64748b' }}>
+        <div style={{ fontSize: '48px', marginBottom: '16px' }}>{icon}</div>
+        <h2 style={{ fontSize: '24px' }}>{title}</h2>
+      </div>
+    </div>
+  )
+}
 
 function App() {
   console.log('📱 App rendering')
@@ -36,31 +65,31 @@ function App() {
           <Route path="/home/admin" element={<AdminHome />} />
           
           {/* Customer Pages */}
-          <Route path="/shop" element={<div style={{ padding: '24px' }}>🛒 商店頁面</div>} />
-          <Route path="/orders" element={<div style={{ padding: '24px' }}>📦 訂單頁面</div>} />
-          <Route path="/projects" element={<div style={{ padding: '24px' }}>📋 專案頁面</div>} />
-          <Route path="/cart" element={<div style={{ padding: '24px' }}>🛒 購物車頁面</div>} />
-          <Route path="/favorites" element={<div style={{ padding: '24px' }}>❤️ 收藏頁面</div>} />
+          <Route path="/shop" element={<PlaceholderPage title="商店頁面" icon="🛒" />} />
+          <Route path="/orders" element={<PlaceholderPage title="訂單頁面" icon="📦" />} />
+          <Route path="/projects" element={<PlaceholderPage title="專案頁面" icon="📋" />} />
+          <Route path="/cart" element={<PlaceholderPage title="購物車頁面" icon="🛒" />} />
+          <Route path="/favorites" element={<PlaceholderPage title="收藏頁面" icon="❤️" />} />
           
           {/* Merchant Pages */}
-          <Route path="/merchant/orders" element={<div style={{ padding: '24px' }}>商戶訂單管理</div>} />
-          <Route path="/merchant/products" element={<div style={{ padding: '24px' }}>商品管理</div>} />
-          <Route path="/merchant/stats" element={<div style={{ padding: '24px' }}>銷售統計</div>} />
-          <Route path="/merchant/settings" element={<div style={{ padding: '24px' }}>店舖設定</div>} />
+          <Route path="/merchant/orders" element={<PlaceholderPage title="商戶訂單管理" icon="📦" />} />
+          <Route path="/merchant/products" element={<PlaceholderPage title="商品管理" icon="🏷️" />} />
+          <Route path="/merchant/stats" element={<PlaceholderPage title="銷售統計" icon="📊" />} />
+          <Route path="/merchant/settings" element={<PlaceholderPage title="店舖設定" icon="⚙️" />} />
           
           {/* Delivery Pages */}
-          <Route path="/delivery/tasks" element={<div style={{ padding: '24px' }}>配送任務</div>} />
-          <Route path="/delivery/history" element={<div style={{ padding: '24px' }}>配送歷史</div>} />
-          <Route path="/delivery/earnings" element={<div style={{ padding: '24px' }}>收入統計</div>} />
-          <Route path="/delivery/ratings" element={<div style={{ padding: '24px' }}>評價反饋</div>} />
+          <Route path="/delivery/tasks" element={<PlaceholderPage title="配送任務" icon="📍" />} />
+          <Route path="/delivery/history" element={<PlaceholderPage title="配送歷史" icon="📋" />} />
+          <Route path="/delivery/earnings" element={<PlaceholderPage title="收入統計" icon="💰" />} />
+          <Route path="/delivery/ratings" element={<PlaceholderPage title="評價反饋" icon="⭐" />} />
           
           {/* Admin Pages */}
-          <Route path="/admin/users" element={<div style={{ padding: '24px' }}>用戶管理</div>} />
-          <Route path="/admin/merchants" element={<div style={{ padding: '24px' }}>商戶管理</div>} />
-          <Route path="/admin/orders" element={<div style={{ padding: '24px' }}>訂單管理</div>} />
-          <Route path="/admin/analytics" element={<div style={{ padding: '24px' }}>數據分析</div>} />
-          <Route path="/admin/messages" element={<div style={{ padding: '24px' }}>消息中心</div>} />
-          <Route path="/admin/settings" element={<div style={{ padding: '24px' }}>系統設定</div>} />
+          <Route path="/admin/users" element={<PlaceholderPage title="用戶管理" icon="👥" />} />
+          <Route path="/admin/merchants" element={<PlaceholderPage title="商戶管理" icon="🏪" />} />
+          <Route path="/admin/orders" element={<PlaceholderPage title="訂單管理" icon="📦" />} />
+          <Route path="/admin/analytics" element={<PlaceholderPage title="數據分析" icon="📊" />} />
+          <Route path="/admin/messages" element={<PlaceholderPage title="消息中心" icon="💬" />} />
+          <Route path="/admin/settings" element={<PlaceholderPage title="系統設定" icon="⚙️" />} />
           
           {/* Common Pages */}
           <Route path="/profile" element={<ProfilePage />} />
