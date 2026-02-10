@@ -8,9 +8,14 @@ import { useAuthStore } from '@/stores/authStore'
 export function DynamicHome() {
   const { profile } = useAuthStore()
 
-  console.log('🏠 DynamicHome - routing to:', `/home/${profile?.role}`)
+  console.log('🏠 DynamicHome - profile:', { role: profile?.role, email: profile?.email })
 
-  switch (profile?.role) {
+  // Fallback to customer if role is undefined
+  const role = profile?.role || 'customer'
+  const routePath = `/home/${role}`
+  console.log('🏠 DynamicHome - routing to:', routePath)
+
+  switch (role) {
     case 'customer':
       return <Navigate to="/home/customer" replace />
     case 'merchant':
@@ -20,7 +25,7 @@ export function DynamicHome() {
     case 'admin':
       return <Navigate to="/home/admin" replace />
     default:
-      // Fallback - should not happen
-      return <Navigate to="/login" replace />
+      // Final fallback to customer
+      return <Navigate to="/home/customer" replace />
   }
 }

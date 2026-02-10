@@ -87,6 +87,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       if (docSnap.exists()) {
         const profile = docSnap.data() as UserProfile
+        console.log('✅ Profile found for uid:', { uid, role: profile.role })
         // cache and set state
         localStorage.setItem('authCache', JSON.stringify({ uid, profile }))
         set({ profile, needsOnboarding: !profile.onboardingCompleted })
@@ -94,7 +95,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       // If no profile, create a default one and set state immediately
+      const currentUser = auth.currentUser
       const newProfile: UserProfile = {
+        email: currentUser?.email || '',
+        role: 'customer',
+        displayName: currentUser?.displayName || '',
+        onboardingCompleted: false,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+      console.log('✨ Creating default profile:', { uid, role: newProfile.role })
+      set({ profile: newProfile, needsOnboarding: true })
+      // create in background
+      void createUserProfileAsync(uid, newProfile)
+      return newProfile
+    } catch (error) {
+      console.error('⚠️ Error in fetchProfileByUid:', error)
+      // Return a fallback profile to prevent undefined role
+      const fallbackProfile: UserProfile = {
         email: '',
         role: 'customer',
         displayName: '',
@@ -102,13 +120,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         createdAt: new Date(),
         updatedAt: new Date()
       }
-      set({ profile: newProfile, needsOnboarding: true })
-      // create in background
-      void createUserProfileAsync(uid, newProfile)
-      return newProfile
-    } catch (error) {
-      console.error('⚠️ Error in fetchProfileByUid:', error)
-      return null
+      set({ profile: fallbackProfile, needsOnboarding: false })
+      return fallbackProfile
     }
   },
 
