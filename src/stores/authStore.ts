@@ -88,8 +88,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (docSnap.exists()) {
         const profile = docSnap.data() as UserProfile
         console.log('✅ Profile found for uid:', { uid, role: profile.role })
-        // cache and set state
-        localStorage.setItem('authCache', JSON.stringify({ uid, profile }))
+        // cache and set state (include timestamp)
+        localStorage.setItem('authCache', JSON.stringify({ uid, profile, ts: Date.now() }))
         set({ profile, needsOnboarding: !profile.onboardingCompleted })
         return profile
       }
@@ -221,7 +221,8 @@ async function fetchFreshProfile(uid: string) {
       const profile = docSnap.data() as UserProfile
       localStorage.setItem('authCache', JSON.stringify({
         uid,
-        profile
+        profile,
+        ts: Date.now()
       }))
       useAuthStore.setState({
         profile,
@@ -242,7 +243,8 @@ async function createUserProfileAsync(uid: string, profile: UserProfile) {
     console.log('✅ User profile created in Firestore')
     localStorage.setItem('authCache', JSON.stringify({
       uid,
-      profile
+      profile,
+      ts: Date.now()
     }))
   } catch (error) {
     console.error('⚠️ Error creating profile:', error)
@@ -259,13 +261,15 @@ export const initAuth = () => {
     if (user) {
       try {
         // Try to load from cache first for speed
+        const CACHE_TTL = 60 * 1000 // 1 minute
         const cached = localStorage.getItem('authCache')
         let cachedData = null
         if (cached) {
           try {
             cachedData = JSON.parse(cached)
             if (cachedData.uid === user.uid) {
-              console.log('⚡ Using cached profile - faster login!')
+              const age = Date.now() - (cachedData.ts || 0)
+              console.log('⚡ Using cached profile - age ms:', age)
               useAuthStore.setState({
                 user,
                 profile: cachedData.profile,
@@ -273,8 +277,13 @@ export const initAuth = () => {
                 loading: false,
                 initialized: true
               })
-              // Fetch fresh data in background
-              setTimeout(() => fetchFreshProfile(user.uid), 100)
+              // If cache is stale, refresh in background, otherwise skip
+              if (age > CACHE_TTL) {
+                console.log('🔁 Cache stale — fetching fresh profile in background')
+                setTimeout(() => fetchFreshProfile(user.uid), 100)
+              } else {
+                // fresh enough, no immediate fetch
+              }
               return
             }
           } catch (e) {

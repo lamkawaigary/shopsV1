@@ -1,3 +1,4 @@
+import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { AppLayout } from './components/layout/AppLayout'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
@@ -5,10 +6,10 @@ import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { OnboardingPage } from './pages/auth/OnboardingPage'
 import { ProfilePage } from './pages/customer/ProfilePage'
-import { CustomerHome } from './pages/home/CustomerHome'
-import { MerchantHome } from './pages/home/MerchantHome'
-import { DeliveryHome } from './pages/home/DeliveryHome'
-import { AdminHome } from './pages/home/AdminHome'
+const CustomerHome = lazy(() => import('./pages/home/CustomerHome').then(m => ({ default: m.CustomerHome })))
+const MerchantHome = lazy(() => import('./pages/home/MerchantHome').then(m => ({ default: m.MerchantHome })))
+const DeliveryHome = lazy(() => import('./pages/home/DeliveryHome').then(m => ({ default: m.DeliveryHome })))
+const AdminHome = lazy(() => import('./pages/home/AdminHome').then(m => ({ default: m.AdminHome })))
 import { DynamicHome } from './pages/home/DynamicHome'
 
 // Simple placeholder page with back button to aid testing
@@ -59,10 +60,10 @@ function App() {
           <Route path="/" element={<DynamicHome />} />
           
           {/* Role-specific Homes */}
-          <Route path="/home/customer" element={<CustomerHome />} />
-          <Route path="/home/merchant" element={<MerchantHome />} />
-          <Route path="/home/delivery" element={<DeliveryHome />} />
-          <Route path="/home/admin" element={<AdminHome />} />
+          <Route path="/home/customer" element={<Suspense fallback={<div style={{ padding: '24px' }}>載入中...</div>}><CustomerHome /></Suspense>} />
+          <Route path="/home/merchant" element={<Suspense fallback={<div style={{ padding: '24px' }}>載入中...</div>}><MerchantHome /></Suspense>} />
+          <Route path="/home/delivery" element={<Suspense fallback={<div style={{ padding: '24px' }}>載入中...</div>}><DeliveryHome /></Suspense>} />
+          <Route path="/home/admin" element={<Suspense fallback={<div style={{ padding: '24px' }}>載入中...</div>}><AdminHome /></Suspense>} />
           
           {/* Customer Pages */}
           <Route path="/shop" element={<PlaceholderPage title="商店頁面" icon="🛒" />} />
