@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopS - Basic Test</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 48px 32px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      max-width: 400px;
+      width: 100%;
+    }
+    .logo { font-size: 64px; margin-bottom: 16px; }
+    .title { font-size: 32px; font-weight: bold; margin-bottom: 8px; color: #1e293b; }
+    .subtitle { color: #64748b; margin-bottom: 32px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="logo">🛒</div>
+      <h1 class="title">ShopS</h1>
+      <p class="subtitle">登入你的帳戶</p>
+      <p style="color: #999;">Basic HTML rendering OK!</p>
+      <p style="font-size: 12px; color: #ccc; margin-top: 16px;">
+        Time: <span id="time"></span>
+      </p>
+    </div>
+  </div>
+  
+  <script>
+    console.log('✅ Basic HTML loaded');
+    document.getElementById('time').textContent = new Date().toLocaleString('zh-HK');
+    console.log('✅ JavaScript executed');
+  </script>
+</body>
+</html>

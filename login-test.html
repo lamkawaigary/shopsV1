@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopS - Direct React Test</title>
+  <script crossorigin src="https://unpkg.com/react@19/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@19/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 48px 32px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      max-width: 400px;
+      width: 100%;
+    }
+    .logo { font-size: 64px; margin-bottom: 16px; }
+    .title { font-size: 32px; font-weight: bold; margin-bottom: 8px; color: #1e293b; }
+    .subtitle { color: #64748b; margin-bottom: 32px; }
+    .button {
+      width: 100%;
+      padding: 14px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+    .button-outline {
+      background: white;
+      color: #2563eb;
+      border: 2px solid #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState } = React;
+    
+    function LoginPage() {
+      return (
+        <div class="container">
+          <div class="card">
+            <div class="logo">🛒</div>
+            <h1 class="title">ShopS</h1>
+            <p class="subtitle">登入你的帳戶</p>
+            
+            <input 
+              type="email" 
+              placeholder="電郵地址"
+              style={{
+                width: '100%',
+                padding: '14px',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                marginBottom: '12px',
+                fontSize: '16px',
+                boxSizing: 'border-box'
+              }}
+            />
+            
+            <input 
+              type="password"
+              placeholder="密碼"
+              style={{
+                width: '100%',
+                padding: '14px',
+                border: '1px solid #ddd',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                fontSize: '16px',
+                boxSizing: 'border-box'
+              }}
+            />
+            
+            <button class="button">登入</button>
+            
+            <button class="button button-outline">
+              🔵 Google 登入
+            </button>
+            
+            <p style={{ marginTop: '24px', color: '#666' }}>
+              未有帳戶？<span style={{ color: '#2563eb', cursor: 'pointer' }}>立即註冊</span>
+            </p>
+          </div>
+        </div>
+      );
+    }
+    
+    console.log('✅ React loaded');
+    console.log('✅ ReactDOM:', typeof ReactDOM);
+    
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<LoginPage />);
+    console.log('✅ App rendered!');
+  </script>
+</body>
+</html>

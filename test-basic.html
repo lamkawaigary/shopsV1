@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ShopS - Basic Test</title>
+  <style>
+    body { 
+      font-family: system-ui, sans-serif; 
+      margin: 0; 
+      padding: 40px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .box {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    h1 { font-size: 32px; margin: 0 0 8px 0; }
+    p { color: #666; }
+    .time { font-size: 12px; color: #999; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>🛒 ShopS</h1>
+    <p>Basic HTML Test</p>
+    <p class="time">Updated: <span id="time"></span></p>
+  </div>
+  <script>
+    document.getElementById('time').textContent = new Date().toLocaleString('zh-HK');
+  </script>
+</body>
+</html>
