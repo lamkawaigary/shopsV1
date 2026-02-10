@@ -1,4 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
+import { useState } from 'react'
 import { useAuthStore } from '@/stores/authStore'
 import type { UserRole } from '@/stores/authStore'
 import { useCartStore } from '@/stores/cartStore'
@@ -43,7 +44,20 @@ export function AppLayout() {
   const location = useLocation()
   const { user, profile, loading, signOut } = useAuthStore()
   const { getItemCount } = useCartStore()
+  const [signingOut, setSigningOut] = useState(false)
   const cartCount = getItemCount()
+  
+  const handleSignOut = async () => {
+    setSigningOut(true)
+    try {
+      await signOut()
+      console.log('🔑 Signed out, redirecting to login...')
+      navigate('/login', { replace: true })
+    } catch (error) {
+      console.error('Error signing out:', error)
+      setSigningOut(false)
+    }
+  }
   
   if (loading) {
     return (
@@ -131,18 +145,21 @@ export function AppLayout() {
               </div>
               
               <button 
-                onClick={() => signOut()}
+                onClick={handleSignOut}
+                disabled={signingOut}
                 style={{
-                  background: '#ef4444',
-                  color: 'white',
+                  background: signingOut ? '#a5f3fc' : '#ef4444',
+                  color: signingOut ? '#0369a1' : 'white',
                   border: 'none',
                   padding: '8px 16px',
                   borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '14px'
+                  cursor: signingOut ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  transition: 'all 0.3s'
                 }}
               >
-                登出
+                {signingOut ? '登出中...' : '登出'}
               </button>
             </div>
           )}

@@ -95,8 +95,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   signOut: async () => {
-    await firebaseSignOut(auth)
-    set({ user: null, profile: null, needsOnboarding: false })
+    try {
+      console.log('🔑 Signing out...')
+      await firebaseSignOut(auth)
+      // Clear all auth state and local storage
+      localStorage.removeItem('authCache')
+      set({ 
+        user: null, 
+        profile: null, 
+        needsOnboarding: false,
+        loading: false,
+        initialized: true
+      })
+      console.log('✅ Signed out successfully')
+    } catch (error) {
+      console.error('❌ Error signing out:', error)
+      // Still clear state even if Firebase signOut fails
+      set({ 
+        user: null, 
+        profile: null, 
+        needsOnboarding: false,
+        loading: false,
+        initialized: true
+      })
+    }
   },
 
   fetchProfile: async () => {
@@ -127,6 +149,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
     await updateDoc(doc(db, 'users', user.uid), updateData)
     const updatedProfile = { ...profile, ...updateData }
+    
+    // Update cache
+    localStorage.setItem('authCache', JSON.stringify({
+      uid: user.uid,
+      profile: updatedProfile
+    }))
+    
     set({ 
       profile: updatedProfile,
       needsOnboarding: false
@@ -134,7 +163,45 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   }
 }))
 
-// Initialize auth listener
+// Fetch fresh profile in background
+async function fetchFreshProfile(uid: string) {
+  try {
+    const docRef = doc(db, 'users', uid)
+    const docSnap = await getDoc(docRef)
+    
+    if (docSnap.exists()) {
+      const profile = docSnap.data() as UserProfile
+      localStorage.setItem('authCache', JSON.stringify({
+        uid,
+        profile
+      }))
+      useAuthStore.setState({
+        profile,
+        needsOnboarding: !profile.onboardingCompleted
+      })
+    }
+  } catch (error) {
+    console.error('⚠️ Error fetching fresh profile:', error)
+  }
+}
+
+// Create user profile asynchronously (non-blocking)
+async function createUserProfileAsync(uid: string, profile: UserProfile) {
+  try {
+    const { setDoc } = await import('firebase/firestore')
+    const docRef = doc(db, 'users', uid)
+    await setDoc(docRef, profile)
+    console.log('✅ User profile created in Firestore')
+    localStorage.setItem('authCache', JSON.stringify({
+      uid,
+      profile
+    }))
+  } catch (error) {
+    console.error('⚠️ Error creating profile:', error)
+  }
+}
+
+// Initialize auth listener with optimizations
 export const initAuth = () => {
   console.log('🔐 initAuth called')
   
@@ -143,6 +210,32 @@ export const initAuth = () => {
     
     if (user) {
       try {
+        // Try to load from cache first for speed
+        const cached = localStorage.getItem('authCache')
+        let cachedData = null
+        if (cached) {
+          try {
+            cachedData = JSON.parse(cached)
+            if (cachedData.uid === user.uid) {
+              console.log('⚡ Using cached profile - faster login!')
+              useAuthStore.setState({
+                user,
+                profile: cachedData.profile,
+                needsOnboarding: !cachedData.profile?.onboardingCompleted,
+                loading: false,
+                initialized: true
+              })
+              // Fetch fresh data in background
+              setTimeout(() => fetchFreshProfile(user.uid), 100)
+              return
+            }
+          } catch (e) {
+            console.log('⚠️ Invalid cache, fetching fresh')
+          }
+        }
+        
+        // Load profile from Firestore
+        console.log('🔍 Fetching profile from Firestore...')
         const docRef = doc(db, 'users', user.uid)
         const docSnap = await getDoc(docRef)
         
@@ -152,41 +245,41 @@ export const initAuth = () => {
         if (docSnap.exists()) {
           profile = docSnap.data() as UserProfile
           console.log('👤 User profile found in Firestore:', { role: profile.role, onboardingCompleted: profile.onboardingCompleted })
-          // Check if user needs onboarding (hasn't completed it yet)
           needsOnboarding = !profile.onboardingCompleted
+          
+          // Cache for next time
+          localStorage.setItem('authCache', JSON.stringify({
+            uid: user.uid,
+            profile: profile
+          }))
         } else {
           // Create default profile for new users
-          console.log('✨ New user detected - creating default profile in Firestore')
-          const { setDoc } = await import('firebase/firestore')
+          console.log('✨ New user detected - creating default profile')
           const newProfile: UserProfile = {
             email: user.email || '',
-            role: 'customer', // Default role
+            role: 'customer',
             displayName: user.displayName || '',
             onboardingCompleted: false,
             createdAt: new Date(),
             updatedAt: new Date()
           }
-          try {
-            await setDoc(docRef, newProfile)
-            console.log('✅ New user profile created successfully')
-            profile = newProfile
-            needsOnboarding = true // New user always needs onboarding
-          } catch (createError) {
-            console.error('⚠️ Error creating user profile (likely Firestore rules):', createError)
-            // Still set profile locally even if Firestore creation fails
-            // User can still proceed and try again
-            profile = newProfile
-            needsOnboarding = true
-          }
+          
+          profile = newProfile
+          needsOnboarding = true
+          
+          // Set state immediately to unblock UI - don't wait for Firestore
+          useAuthStore.setState({ 
+            user, 
+            profile,
+            needsOnboarding,
+            loading: false,
+            initialized: true
+          })
+          
+          // Create in Firestore asynchronously (non-blocking)
+          createUserProfileAsync(user.uid, newProfile)
+          return
         }
-        
-        console.log('📝 Setting auth state:', { 
-          userEmail: user.email, 
-          profileRole: profile?.role, 
-          needsOnboarding,
-          initialized: true,
-          loading: false
-        })
         
         useAuthStore.setState({ 
           user, 
@@ -197,7 +290,7 @@ export const initAuth = () => {
         })
       } catch (error) {
         console.error('❌ Error in initAuth:', error)
-        // Still initialize even if profile load fails, but mark that we failed to load profile
+        // Still initialize even if profile load fails
         useAuthStore.setState({ 
           user, 
           profile: null,
@@ -208,6 +301,7 @@ export const initAuth = () => {
       }
     } else {
       console.log('👻 No user logged in - clearing auth state')
+      localStorage.removeItem('authCache')
       useAuthStore.setState({ 
         user: null, 
         profile: null,
