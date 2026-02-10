@@ -170,6 +170,7 @@ export function AppLayout() {
 
       {/* Main Content */}
       <main style={{ 
+        paddingTop: '72px',
         paddingBottom: navConfig ? '80px' : '0',
         maxWidth: '1200px',
         margin: '0 auto'
